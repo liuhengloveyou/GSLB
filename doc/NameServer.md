@@ -170,7 +170,7 @@ GET http://1.2.3.4/d?uid=123456
 **解析规则配置保存在mysql里**：
 
 ```
-CREATE DATABASE `ns` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8 */;
+CREATE SCHEMA `ns` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
 ```
 
 **资源记录(Resource Record, RR)**：
@@ -179,7 +179,8 @@ CREATE TABLE `rr` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `domain` varchar(128) NOT NULL,
   `ttl` int(11) NOT NULL DEFAULT '600',
-  `type` varchar(45) NOT NULL,
+  `type` tinyint(4) NOT NULL,
+  `class` tinyint(4) NOT NULL DEFAULT '1',
   `data` varchar(45) NOT NULL,
   `group` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -191,7 +192,7 @@ CREATE TABLE `rr` (
 **客户分区**:
 
 ```
-CREATE TABLE `zone` (
+CREATE TABLE `ns`.`zone` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `line` varchar(45) DEFAULT NULL,
   `area` varchar(45) DEFAULT NULL,
@@ -204,7 +205,7 @@ CREATE TABLE `zone` (
 
 **业务接入点分组**：
 ```
-CREATE TABLE `rule` (
+CREATE TABLE `ns`.`rule` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `zone` varchar(45) DEFAULT NULL,
   `group` varchar(45) DEFAULT NULL,

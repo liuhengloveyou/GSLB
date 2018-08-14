@@ -26,12 +26,8 @@ func AnotherHelloServer(w ResponseWriter, req *Msg) {
 	w.WriteMsg(m)
 }
 
-func TestServing(t *testing.T) {
-	InitDnsApi()
-}
-
 func TestClient(t *testing.T) {
-	addrstr := "[::]:1320"
+	addrstr := "127.0.0.1:1053"
 	c := new(Client)
 	m := new(Msg)
 	m.SetQuestion("miek.nl.", TypeTXT)

@@ -1,0 +1,8 @@
+http_api_addr = ":8080"
+dns_api_addr = ":1053"
+
+# 是否打开LocalDNS模式
+localdns = true
+
+mysql = "root:123456@tcp(127.0.0.1:3306)/ns?charset=utf8"
+redis = "127.0.0.1:6379"

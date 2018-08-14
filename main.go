@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
-	. "github.com/liuhengloveyou/HTTPDNS/common"
-	gocommon "github.com/liuhengloveyou/go-common"
+	"github.com/liuhengloveyou/GSLB/api"
+	. "github.com/liuhengloveyou/GSLB/common"
 )
 
 type Value struct {
-	t int // 
+	t int //
 
 }
 
@@ -18,19 +19,36 @@ type Value struct {
 var CacheTree map[string]*Value
 
 func main() {
-	if e := gocommon.LoadJsonConfig("./app.conf", &ServConfig); e != nil {
-		panic(e)
+	var wg sync.WaitGroup
+
+	if ServConfig.HTTPApiAddr != "" {
+		s := &http.Server{
+			Addr:           ServConfig.HTTPApiAddr,
+			ReadTimeout:    10 * time.Minute,
+			WriteTimeout:   10 * time.Minute,
+			MaxHeaderBytes: 1 << 20,
+		}
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("%v HTTP %v\n", time.Now(), ServConfig.HTTPApiAddr)
+			if err := s.ListenAndServe(); err != nil {
+				panic("HTTPAPI: " + err.Error())
+			}
+		}()
 	}
 
-	s := &http.Server{
-		Addr:           ServConfig.Listen,
-		ReadTimeout:    10 * time.Minute,
-		WriteTimeout:   10 * time.Minute,
-		MaxHeaderBytes: 1 << 20,
+	if ServConfig.DNSApiAddr != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("%v DNS %v\n", time.Now(), ServConfig.DNSApiAddr)
+			if err := api.InitDnsApi(ServConfig.DNSApiAddr); err != nil {
+				panic("DNSAPI: " + err.Error())
+			}
+		}()
 	}
 
-	fmt.Printf("%v GO %v\n", time.Now(), ServConfig.Listen)
-	if err := s.ListenAndServe(); err != nil {
-		panic("ListenAndServe: " + err.Error())
-	}
+	wg.Wait()
 }
