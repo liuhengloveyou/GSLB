@@ -19,6 +19,10 @@ type Value struct {
 var CacheTree map[string]*Value
 
 func main() {
+	defer Logger.Sync()
+
+	Logger.Info("failed to fetch URLaaaaa")
+	
 	var wg sync.WaitGroup
 
 	if ServConfig.HTTPApiAddr != "" {
