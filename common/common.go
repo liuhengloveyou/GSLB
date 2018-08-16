@@ -34,7 +34,7 @@ type RR struct {
 
 var (
 	ServConfig Config
-	Logger *zap.Logger
+	Logger     *zap.Logger
 )
 
 func init() {
@@ -60,4 +60,18 @@ func initLogger() {
 
 	Logger = zap.New(core)
 	Logger.WithOptions(zap.Development())
+}
+
+func ParseRRType(t uint16) string {
+
+	switch t {
+	case 1:
+		return "A"
+	case 5:
+		return "CNAME"
+	default:
+		return ""
+	}
+
+	return ""
 }

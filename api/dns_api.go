@@ -2,6 +2,7 @@
 package api
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -9,13 +10,13 @@ import (
 	"github.com/liuhengloveyou/GSLB/service"
 
 	"github.com/miekg/dns"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 	qq := make(map[string]map[uint16]*RR)
 	for _, q := range req.Question {
-		log.Infoln("DNS question:", q.Name, q.Qtype)
+		Logger.Info("DNS question:", zap.String("name", q.Name), zap.Uint16("qtype", q.Qtype))
 		if qt, ok := qq[q.Name]; ok {
 			qt[q.Qtype] = nil
 		} else {
@@ -24,7 +25,7 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	if err := service.ResolvDomains(qq); err != nil {
-		log.Errorln("DNS resolv ERR: ", err)
+		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}
 
@@ -64,11 +65,11 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 
 	err := w.WriteMsg(m)
 	if err != nil {
-		log.Errorln("DNSRootServer ERR:", err)
+		Logger.Error("DNSRootServer ERR:" + err.Error())
 		return
 	}
 
-	log.Infoln("DNSRootServer OK:", m)
+	Logger.Info(fmt.Sprintf("DNSRootServer OK: %#v", m))
 	return
 }
 

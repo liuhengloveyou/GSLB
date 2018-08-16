@@ -2,13 +2,12 @@ package dao
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/liuhengloveyou/GSLB/common"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var db *sqlx.DB
@@ -31,7 +30,9 @@ func init() {
 	}
 	db.SetMaxOpenConns(2000)
 	db.SetMaxIdleConns(1000)
-	db.Ping()
+	if e = db.Ping(); e != nil {
+		panic(e)
+	}
 }
 
 func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
@@ -42,10 +43,10 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 		sql = sql + ", '" + d[i] + "'"
 	}
 	sql = sql + ");"
-	log.Debugln("SelectRRsFromMysql: ", sql)
+	common.Logger.Debug("SelectRRsFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
-	log.Infoln("SelectRRsFromMysql end: ", r, e)
+	common.Logger.Info(fmt.Sprintf("SelectRRsFromMysql end: %v %v", r, e))
 	if e != nil {
 		return
 	}
@@ -70,6 +71,6 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 		rr = append(rr, t)
 	}
 
-	log.Infof("SelectRRsFromMysql ended: %#v %d\n", rr, len(rr))
+	common.Logger.Info(fmt.Sprintf("SelectRRsFromMysql ended: %#v %d\n", rr, len(rr)))
 	return rr, nil
 }

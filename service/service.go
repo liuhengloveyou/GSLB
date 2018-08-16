@@ -1,9 +1,10 @@
 package service
 
 import (
+	"fmt"
+
 	. "github.com/liuhengloveyou/GSLB/common"
 	"github.com/liuhengloveyou/GSLB/dao"
-	log "github.com/sirupsen/logrus"
 )
 
 // [domain][type]RR
@@ -23,7 +24,7 @@ func ResolvDomains(rr map[string]map[uint16]*RR) error {
 	for i := 0; i < len(r); i++ {
 		domain := r[i].Domain
 		rtype := r[i].Type
-		log.Debugln("resolv one: ", domain, rtype)
+		Logger.Debug("resolv one: " + domain + string(rtype))
 
 		d := rr[domain]
 		if _, ok := d[rtype]; ok {
@@ -31,7 +32,7 @@ func ResolvDomains(rr map[string]map[uint16]*RR) error {
 		}
 	}
 
-	log.Infof("Resolved: %#v", rr)
+	Logger.Info(fmt.Sprintf("Resolved: %#v", rr))
 
 	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 	"time"
 
@@ -21,23 +20,15 @@ var CacheTree map[string]*Value
 func main() {
 	defer Logger.Sync()
 
-	Logger.Info("failed to fetch URLaaaaa")
-	
 	var wg sync.WaitGroup
 
 	if ServConfig.HTTPApiAddr != "" {
-		s := &http.Server{
-			Addr:           ServConfig.HTTPApiAddr,
-			ReadTimeout:    10 * time.Minute,
-			WriteTimeout:   10 * time.Minute,
-			MaxHeaderBytes: 1 << 20,
-		}
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			fmt.Printf("%v HTTP %v\n", time.Now(), ServConfig.HTTPApiAddr)
-			if err := s.ListenAndServe(); err != nil {
+			if err := api.InitHttpApi(ServConfig.HTTPApiAddr); err != nil {
 				panic("HTTPAPI: " + err.Error())
 			}
 		}()
