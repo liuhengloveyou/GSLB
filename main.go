@@ -23,7 +23,6 @@ func main() {
 	var wg sync.WaitGroup
 
 	if ServConfig.HTTPApiAddr != "" {
-
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

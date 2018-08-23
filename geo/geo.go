@@ -3,6 +3,10 @@ package main
 import "github.com/ipipdotnet/datx-go"
 import "fmt"
 
+func GetIspAndCity(client string) (isp, city string) {
+	return "电信", "中国广东"
+}
+
 func FindCity() {
 
 	city, err := datx.NewCity("data/17monipdb.datx")

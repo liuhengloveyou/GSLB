@@ -8,7 +8,10 @@ import (
 )
 
 // [domain][type]RR
-func ResolvDomains(rr map[string]map[uint16]*RR) error {
+func ResolvDomains(client string, rr map[string]map[uint16]*RR) error {
+
+	//查解析规则
+
 	d := make([]string, len(rr))
 	i := 0
 	for k := range rr {

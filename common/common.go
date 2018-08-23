@@ -32,6 +32,20 @@ type RR struct {
 	Group  string
 }
 
+type Rule struct {
+	ID     int
+	Domain string
+	Zone   string
+	Group  string
+}
+
+type Zone struct {
+	ID   int
+	Line string
+	Area string
+	Zone string
+}
+
 var (
 	ServConfig Config
 	Logger     *zap.Logger

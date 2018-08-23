@@ -74,3 +74,43 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	common.Logger.Info(fmt.Sprintf("SelectRRsFromMysql ended: %#v %d\n", rr, len(rr)))
 	return rr, nil
 }
+
+func SelectRulesFromMysql(domains []string) (rules []*common.Rule, e error) {
+	r := []common.Rule{}
+
+	sql := "SELECT * FROM ns.rule where domain in ('" + domains[0] + "'"
+	for i := 1; i < len(domains); i++ {
+		sql = sql + ", '" + domains[i] + "'"
+	}
+	sql = sql + ");"
+	common.Logger.Debug("SelectRulesFromMysql: " + sql)
+
+	e = db.Select(&r, sql)
+	common.Logger.Info(fmt.Sprintf("SelectRulesFromMysql end: %v %v", r, e))
+	if e != nil {
+		return
+	}
+
+	for i := 0; i < len(r); i++ {
+		t := &common.RR{
+			ID:     r[i].ID,
+			Domain: r[i].Domain,
+			Ttl:    r[i].Ttl,
+			Type:   r[i].Type,
+			Class:  r[i].Class,
+		}
+
+		if r[i].Data.Valid {
+			t.Data = r[i].Data.String
+		}
+
+		if r[i].Group.Valid {
+			t.Group = r[i].Group.String
+		}
+
+		rr = append(rr, t)
+	}
+
+	common.Logger.Info(fmt.Sprintf("SelectRRsFromMysql ended: %#v %d\n", rr, len(rr)))
+	return rr, nil
+}

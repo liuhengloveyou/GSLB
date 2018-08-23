@@ -188,8 +188,9 @@ CREATE TABLE `rr` (
   `group` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `index_domain_type` (`domain`,`type`),
-  KEY `index_group` (`group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `index_group` (`group`,`domain`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
 ```
 
 **客户分区**:
@@ -197,23 +198,24 @@ CREATE TABLE `rr` (
 ```
 CREATE TABLE `ns`.`zone` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `line` varchar(45) DEFAULT NULL,
-  `area` varchar(45) DEFAULT NULL,
-  `zone` varchar(45) DEFAULT NULL,
+  `line` varchar(45) COLLATE utf8_bin NOT NULL,
+  `area` varchar(45) COLLATE utf8_bin NOT NULL,
+  `zone` varchar(45) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `index_line_area` (`line`,`area`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `index_line_area` (`line`,`area`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ```
 
-**业务接入点分组**：
+**解析映射**：
 ```
 CREATE TABLE `ns`.`rule` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `zone` varchar(45) DEFAULT NULL,
-  `group` varchar(45) DEFAULT NULL,
+  `domain` varchar(256) COLLATE utf8_bin NOT NULL,
+  `zone` varchar(45) COLLATE utf8_bin NOT NULL,
+  `group` varchar(45) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 ```
 
 
