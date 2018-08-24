@@ -3,8 +3,7 @@ package dao
 import (
 	"fmt"
 	"testing"
-
-	"github.com/liuhengloveyou/GSLB/common"
+	//	"github.com/liuhengloveyou/GSLB/common"
 )
 
 func TestSelectRulesFromMysql(t *testing.T) {

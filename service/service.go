@@ -10,8 +10,7 @@ import (
 // [domain][type]RR
 func ResolvDomains(client string, rr map[string]map[uint16]*RR) error {
 
-	//查解析规则
-
+	// 所有域名
 	d := make([]string, len(rr))
 	i := 0
 	for k := range rr {
@@ -19,6 +18,21 @@ func ResolvDomains(client string, rr map[string]map[uint16]*RR) error {
 		i++
 	}
 
+	// 查就近解析规则
+	rules, err := dao.SelectRulesFromMysql(d)
+	if err != nil {
+		Logger.Error("dao.SelectRulesFromMysql ERR: " + err.Error())
+		return err
+	}
+
+	// 有定义就近解析规则就按规则解析
+	if len(rules) > 0 {
+
+	} else {
+		// 没有定义解析规则
+	}
+
+	// 查询域名资源记录
 	r, e := dao.SelectRRsFromMysql(d)
 	if e != nil {
 		return e
