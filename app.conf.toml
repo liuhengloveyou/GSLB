@@ -4,5 +4,10 @@ dns_api_addr = ":1053"
 # 是否打开LocalDNS模式
 localdns = true
 
+# 解析规则缓存刷新间隔秒数
+cache_ttl = 10
+
 mysql = "root:123456@tcp(127.0.0.1:3306)/ns?charset=utf8"
 redis = "127.0.0.1:6379"
+
+geodb="./ipip.txtx"

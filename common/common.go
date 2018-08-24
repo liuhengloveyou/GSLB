@@ -17,9 +17,14 @@ func (p *NilWriter) Write(b []byte) (n int, err error) { return 0, nil }
 type Config struct {
 	HTTPApiAddr string `toml:"http_api_addr"`
 	DNSApiAddr  string `toml:"dns_api_addr"`
-	Mysql       string `toml:"mysql"`
-	LogDir      string `toml:"log_dir"`
-	LogLevel    string `toml:"log_level"`
+	CacheTTL    int64  `toml:"cache_ttl"`
+
+	Mysql string `toml:"mysql"`
+
+	GeoDB string `toml:"geodb"`
+
+	LogDir   string `toml:"log_dir"`
+	LogLevel string `toml:"log_level"`
 }
 
 type RR struct {

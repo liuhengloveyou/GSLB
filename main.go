@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"sync"
-	"time"
+	//	"time"
 
 	"github.com/liuhengloveyou/GSLB/api"
 	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/geo"
+	"github.com/liuhengloveyou/GSLB/service"
 )
 
 type Value struct {
@@ -20,13 +22,20 @@ var CacheTree map[string]*Value
 func main() {
 	defer Logger.Sync()
 
+	fmt.Println("init GEO database...")
+	if err := geo.NewGeo(ServConfig.GeoDB); err != nil {
+		panic(err)
+	}
+
+	go service.LoadRRCache()
+
 	var wg sync.WaitGroup
 
 	if ServConfig.HTTPApiAddr != "" {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fmt.Printf("%v HTTP %v\n", time.Now(), ServConfig.HTTPApiAddr)
+			fmt.Printf("HTTP %v\n", ServConfig.HTTPApiAddr)
 			if err := api.InitHttpApi(ServConfig.HTTPApiAddr); err != nil {
 				panic("HTTPAPI: " + err.Error())
 			}
@@ -37,7 +46,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fmt.Printf("%v DNS %v\n", time.Now(), ServConfig.DNSApiAddr)
+			fmt.Printf("DNS %v\n", ServConfig.DNSApiAddr)
 			if err := api.InitDnsApi(ServConfig.DNSApiAddr); err != nil {
 				panic("DNSAPI: " + err.Error())
 			}

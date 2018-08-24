@@ -18,17 +18,11 @@ func TestIpipDB(t *testing.T) {
 	r, e = ipip.Find("012.172.161.187")
 	fmt.Println("rst>>>", r, e)
 
-	r, e = ipip.Find("019.122.161.187")
+	r, e = ipip.Find("122.13.132.175")
 	fmt.Println("rst>>>", r, e)
-
-	for i := 0; i < 1000000; i++ {
-		r, e = ipip.Find(int2ip(uint32(i * 1000)).String())
-		fmt.Println("rst>>>", r, e)
-	}
 }
 
 func BenchmarkIpipDB(b *testing.B) {
-
 	for i := 0; i < b.N; i++ {
 		ipip.Find(int2ip(uint32(i)).String())
 		//	fmt.Println("rst>>>", r, e)

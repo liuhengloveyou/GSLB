@@ -24,7 +24,7 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 		}
 	}
 
-	if err := service.ResolvDomains(qq); err != nil {
+	if err := service.ResolvDomains("", qq); err != nil {
 		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}
@@ -74,7 +74,6 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 }
 
 func InitDnsApi(addr string) error {
-
 	dns.HandleFunc(".", rootDNServer)
 
 	pc, err := net.ListenPacket("udp", addr)

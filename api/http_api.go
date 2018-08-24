@@ -131,7 +131,7 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		qq[dnn] = map[uint16]*RR{dns.TypeA: nil, dns.TypeCNAME: nil}
 	}
 
-	if err := service.ResolvDomains(qq); err != nil {
+	if err := service.ResolvDomains(ip, qq); err != nil {
 		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}

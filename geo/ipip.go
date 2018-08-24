@@ -10,23 +10,28 @@ import (
 	"strings"
 )
 
-type IpipRecord struct {
-	start   uint32
-	end     uint32
-	Country string
-	Isp     string
+type IpRecord struct {
+	start        uint32
+	end          uint32
+	Country      string
+	Province     string
+	City         string
+	Organization string
+	ISP          string
+	Latitude     string
+	Longitude    string
 }
 
 type IpipDB struct {
 	file *os.File
 
-	records []IpipRecord
+	records []IpRecord
 }
 
 var ErrIPv4Format = errors.New("ipv4 format error")
 var ErrNotFound = errors.New("not found")
 
-func NewIpipDB(fn string) (db *IpipDB, err error) {
+func newIpipDB(fn string) (db *IpipDB, err error) {
 	db = &IpipDB{}
 
 	if err := db.load(fn); err != nil {
@@ -50,7 +55,7 @@ func (db *IpipDB) load(fn string) (err error) {
 		}
 		i = i + 1
 
-		var r *IpipRecord
+		var r *IpRecord
 		r, err = parseLine(line)
 		if err != nil {
 			fmt.Println(i, err)
@@ -63,7 +68,7 @@ func (db *IpipDB) load(fn string) (err error) {
 	return nil
 }
 
-func (db *IpipDB) Find(ip string) (*IpipRecord, error) {
+func (db *IpipDB) find(ip string) (*IpRecord, error) {
 	ipv := net.ParseIP(ip)
 	if ipv == nil {
 		return nil, ErrIPv4Format
@@ -93,13 +98,29 @@ func (db *IpipDB) Find(ip string) (*IpipRecord, error) {
 	return nil, nil
 }
 
-func parseLine(line []byte) (r *IpipRecord, err error) {
+func (db *IpipDB) FindIP(ip string) (line, area string) {
+	if r, err := db.find(ip); err == nil {
+		if r != nil {
+			if r.Country == "中国" {
+				line = r.ISP
+				area = r.Country + r.Province
+			} else {
+				line = r.Country
+				area = r.Province
+			}
+		}
+	}
+
+	return
+}
+
+func parseLine(line []byte) (r *IpRecord, err error) {
 	fields := strings.Fields(string(line))
 	if len(fields) != 15 && len(fields) != 17 {
 		return nil, fmt.Errorf("ipip line ERR: %d", len(fields))
 	}
 
-	r = &IpipRecord{}
+	r = &IpRecord{}
 
 	ipv := net.ParseIP(fields[0])
 	if ipv == nil || ipv.To4() == nil {
@@ -113,6 +134,12 @@ func parseLine(line []byte) (r *IpipRecord, err error) {
 	}
 	r.end = binary.BigEndian.Uint32(ipv.To4())
 	r.Country = fields[2]
+	r.Province = fields[3]
+	r.City = fields[4]
+	r.Organization = fields[5]
+	r.ISP = fields[6]
+	r.Latitude = fields[7]
+	r.Longitude = fields[8]
 
 	return r, nil
 }
