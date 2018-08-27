@@ -29,7 +29,6 @@ func groupLB(domain, group string) *RR {
 
 	p := int64(time.Now().Unix()) % int64(len(rrs))
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>", p)
 	return rrs[p]
 }
 
@@ -62,6 +61,7 @@ func ResolvDomains(clientIP string, rr map[string]map[uint16]*RR) error {
 			Logger.Debug("resolv one: " + r.Domain)
 		} else {
 			// 没有定义解析规则
+			// @@@
 		}
 	}
 
