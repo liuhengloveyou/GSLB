@@ -116,6 +116,13 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 合法的域名以.结尾
+	for i := 0; i < len(dn); i++ {
+		if false == strings.HasSuffix(dn[i], ".") {
+			dn[i] = dn[i] + "."
+		}
+	}
+
 	rst.U = ip
 
 	Logger.Info("HTTP get", zap.Strings("dn", dn), zap.String("ip", ip), zap.String("qk", qk), zap.String("qv", qv))
@@ -141,6 +148,11 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 			N:  k,
 			S:  ErrNotFound,
 			Rs: nil,
+		}
+
+		// A记录优先于CNAME,
+		if tv, ok := v[dns.TypeA]; ok && tv != nil {
+			delete(v, dns.TypeCNAME)
 		}
 
 		for t, r := range v {

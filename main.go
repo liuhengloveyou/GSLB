@@ -22,12 +22,13 @@ var CacheTree map[string]*Value
 func main() {
 	defer Logger.Sync()
 
+	go service.LoadRRCache()
+	go service.LoadRuleCache()
+
 	fmt.Println("init GEO database...")
 	if err := geo.NewGeo(ServConfig.GeoDB); err != nil {
 		panic(err)
 	}
-
-	go service.LoadRRCache()
 
 	var wg sync.WaitGroup
 

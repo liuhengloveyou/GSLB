@@ -40,6 +40,8 @@ type RR struct {
 type Rule struct {
 	ID     int
 	Domain string
+	Line   string
+	Area   string
 	Zone   string
 	Group  string
 }

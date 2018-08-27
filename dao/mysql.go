@@ -36,6 +36,18 @@ func init() {
 	}
 }
 
+func CacheRulesFromMysql(t string) (rules []*common.Rule, e error) {
+	sql := "SELECT rule.domain, zone.line, zone.area,rule.group FROM rule join zone on rule.zone = zone.zone"
+
+	e = db.Select(&rules, sql)
+	common.Logger.Info(fmt.Sprintf("CacheRulesFromMysql end: %v %v", rules, e))
+	if e != nil {
+		return
+	}
+
+	return
+}
+
 func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	r := []RR{}
 
@@ -79,7 +91,7 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 func LoadRRFromMysql(t string) (rr []*common.RR, e error) {
 	r := []RR{}
 
-	sql := "select *  from rr where update_time >= " + t
+	sql := "select *  from rr where update_time >= '" + t + "'"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
@@ -113,7 +125,6 @@ func LoadRRFromMysql(t string) (rr []*common.RR, e error) {
 }
 
 func SelectRulesFromMysql(domains []string) (rules []*common.Rule, e error) {
-	r := []common.Rule{}
 
 	sql := "SELECT * FROM ns.rule where domain in ('" + domains[0] + "'"
 	for i := 1; i < len(domains); i++ {
@@ -122,8 +133,8 @@ func SelectRulesFromMysql(domains []string) (rules []*common.Rule, e error) {
 	sql = sql + ");"
 	common.Logger.Debug("SelectRulesFromMysql: " + sql)
 
-	e = db.Select(&r, sql)
-	common.Logger.Info(fmt.Sprintf("SelectRulesFromMysql end: %v %v", r, e))
+	e = db.Select(&rules, sql)
+	common.Logger.Info(fmt.Sprintf("SelectRulesFromMysql end: %v %v", rules, e))
 	if e != nil {
 		return
 	}
