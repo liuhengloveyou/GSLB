@@ -31,8 +31,8 @@ type IpipDB struct {
 var ErrIPv4Format = errors.New("ipv4 format error")
 var ErrNotFound = errors.New("not found")
 
-func newIpipDB(fn string) (db *IpipDB, err error) {
-	db = &IpipDB{}
+func newIpipDB(fn string) (geo Geo, err error) {
+	db := &IpipDB{}
 
 	if err := db.load(fn); err != nil {
 		return nil, err

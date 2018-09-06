@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	. "github.com/liuhengloveyou/GSLB/common"
-	"github.com/liuhengloveyou/GSLB/service"
+	. "../common"
+	"../service"
 
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 		}
 	}
 
-	if err := service.ResolvDomains("", qq); err != nil {
+	if err := service.ResolvDomains(w.RemoteAddr().(*net.UDPAddr).String(), qq); err != nil {
 		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}

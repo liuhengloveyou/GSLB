@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/liuhengloveyou/GSLB/common"
-	"github.com/liuhengloveyou/GSLB/service"
+	. "../common"
+	"../service"
 
 	gocommon "github.com/liuhengloveyou/go-common"
 	"github.com/miekg/dns"
@@ -127,9 +127,9 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 
 	Logger.Info("HTTP get", zap.Strings("dn", dn), zap.String("ip", ip), zap.String("qk", qk), zap.String("qv", qv))
 
-	// 业务定制解析
+	// 业务定制解析; 要跟业务确定需求 @@@
 	if qk != "" {
-		// @@@
+		service.ResolvLogicRule(qk, qv)
 		return // 不再往下处理
 	}
 

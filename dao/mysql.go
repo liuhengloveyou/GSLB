@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/liuhengloveyou/GSLB/common"
+	"../common"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -23,7 +23,7 @@ type RR struct {
 	UpdateTime sql.RawBytes `db:"update_time"`
 }
 
-func init() {
+func InitDB() {
 	var e error
 
 	if db, e = sqlx.Connect("mysql", common.ServConfig.Mysql); e != nil {
@@ -36,7 +36,43 @@ func init() {
 	}
 }
 
-func CacheRulesFromMysql(t string) (rules []*common.Rule, e error) {
+func LoadRRFromMysql() (rr []*common.RR, e error) {
+	r := []RR{}
+
+	sql := "select *  from rr"
+	common.Logger.Debug("LoadRRFromMysql: " + sql)
+
+	e = db.Select(&r, sql)
+	common.Logger.Info(fmt.Sprintf("LoadRRFromMysql end: %v %v", r, e))
+	if e != nil {
+		return
+	}
+
+	for i := 0; i < len(r); i++ {
+		t := &common.RR{
+			ID:     r[i].ID,
+			Domain: r[i].Domain,
+			Ttl:    r[i].Ttl,
+			Type:   r[i].Type,
+			Class:  r[i].Class,
+		}
+
+		if r[i].Data.Valid {
+			t.Data = r[i].Data.String
+		}
+
+		if r[i].Group.Valid {
+			t.Group = r[i].Group.String
+		}
+
+		rr = append(rr, t)
+	}
+
+	common.Logger.Info(fmt.Sprintf("LoadRRFromMysql ended: %#v %d\n", rr, len(rr)))
+	return rr, nil
+}
+
+func CacheRulesFromMysql() (rules []*common.Rule, e error) {
 	sql := "SELECT rule.domain, zone.line, zone.area,rule.group FROM rule join zone on rule.zone = zone.zone"
 
 	e = db.Select(&rules, sql)
@@ -88,40 +124,19 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	return rr, nil
 }
 
-func LoadRRFromMysql(t string) (rr []*common.RR, e error) {
-	r := []RR{}
+func LoadGroupFromMysql() (g []*common.Group, e error) {
 
-	sql := "select *  from rr where update_time >= '" + t + "'"
-	common.Logger.Debug("LoadRRFromMysql: " + sql)
+	sql := "SELECT id,host as domain, group_name as `name`, policy FROM dnsinfo_group;"
+	common.Logger.Debug("LoadGroupFromMysql: " + sql)
 
-	e = db.Select(&r, sql)
-	common.Logger.Info(fmt.Sprintf("LoadRRFromMysql end: %v %v", r, e))
+	e = db.Select(&g, sql)
+	common.Logger.Info(fmt.Sprintf("LoadGroupFromMysql end: %v %v", g, e))
 	if e != nil {
 		return
 	}
 
-	for i := 0; i < len(r); i++ {
-		t := &common.RR{
-			ID:     r[i].ID,
-			Domain: r[i].Domain,
-			Ttl:    r[i].Ttl,
-			Type:   r[i].Type,
-			Class:  r[i].Class,
-		}
-
-		if r[i].Data.Valid {
-			t.Data = r[i].Data.String
-		}
-
-		if r[i].Group.Valid {
-			t.Group = r[i].Group.String
-		}
-
-		rr = append(rr, t)
-	}
-
-	common.Logger.Info(fmt.Sprintf("LoadRRFromMysql ended: %#v %d\n", rr, len(rr)))
-	return rr, nil
+	common.Logger.Info(fmt.Sprintf("LoadGroupFromMysql ended: %#v %d\n", g, len(g)))
+	return
 }
 
 func SelectRulesFromMysql(domains []string) (rules []*common.Rule, e error) {

@@ -2,33 +2,36 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
-	//	"time"
+	"time"
 
-	"github.com/liuhengloveyou/GSLB/api"
-	. "github.com/liuhengloveyou/GSLB/common"
-	"github.com/liuhengloveyou/GSLB/geo"
-	"github.com/liuhengloveyou/GSLB/service"
+	"./api"
+	. "./common"
+	"./dao"
+	"./geo"
+	"./service"
+
+	gocommon "github.com/liuhengloveyou/go-common"
 )
 
-type Value struct {
-	t int //
-
-}
-
-// 解析配置缓存
-var CacheTree map[string]*Value
-
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	if e := gocommon.LoadTomlConfig("./app.conf.toml", &ServConfig); e != nil {
+		panic(e)
+	}
+
+	InitLogger()
 	defer Logger.Sync()
 
-	go service.LoadRRCache()
-	go service.LoadRuleCache()
+	fmt.Println("init mysql...")
+	dao.InitDB()
+
+	go loadCaches()
 
 	fmt.Println("init GEO database...")
-	if err := geo.NewGeo(ServConfig.GeoDB); err != nil {
-		panic(err)
-	}
+	geo.InitGEO()
 
 	var wg sync.WaitGroup
 
@@ -55,4 +58,37 @@ func main() {
 	}
 
 	wg.Wait()
+}
+
+func loadCaches() {
+	for {
+		sleep := ServConfig.CacheTTL
+
+		s, err := service.LoadGroupCache()
+		if err != nil {
+			Logger.Error("LoadGroupCache ERR: " + err.Error())
+		}
+		if err == nil && s < sleep {
+			sleep = s
+		}
+
+		s, err = service.LoadRRCache()
+		if err != nil {
+			Logger.Error("LoadRRCache ERR: " + err.Error())
+		}
+		if err == nil && s < sleep {
+			sleep = s
+		}
+
+		s, err = service.LoadRuleCache()
+		if err != nil {
+			Logger.Error("LoadRuleCache ERR: " + err.Error())
+		}
+		if err == nil && s < sleep {
+			sleep = s
+		}
+
+		Logger.Sync()
+		time.Sleep(time.Second * time.Duration(sleep))
+	}
 }
