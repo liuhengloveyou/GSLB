@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 	"../service"
 
 	gocommon "github.com/liuhengloveyou/go-common"
-	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +24,7 @@ const (
 type Record struct {
 	Type string `json:"type"`
 	Host string `json:"host"`
-	Ttl  uint32 `json:"ttl"`
+	TTL  uint32 `json:"ttl"`
 }
 
 type DomainRecord struct {
@@ -81,6 +81,7 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 	var dn []string
 	var ip string
 	var qk, qv string
+	var c int
 
 	r.ParseForm()
 
@@ -92,6 +93,10 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 			if len(v) > 0 {
 				ip = v[0]
 			}
+		case "c":
+			if len(v) > 0 {
+				c, _ = strconv.Atoi(v[0])
+			}
 		default:
 			qk = k
 			if len(v) > 0 {
@@ -102,7 +107,7 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 
 	rst := &Result{}
 
-	Logger.Debug("HTTP get", zap.Strings("dn", dn), zap.String("ip", ip), zap.String("qk", qk), zap.String("qv", qv))
+	Logger.Debug("HTTP get", zap.Strings("dn", dn), zap.String("ip", ip), zap.String("qk", qk), zap.String("qv", qv), zap.Int("c", c))
 
 	if ip == "" {
 		ip = strings.Split(r.RemoteAddr, ":")[0]
@@ -114,6 +119,10 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		rst.E = "dn param must not null."
 		httpOut(w, http.StatusOK, rst)
 		return
+	}
+
+	if c < 1 {
+		c = 1 // 最少返回一条记录
 	}
 
 	// 合法的域名以.结尾
@@ -133,12 +142,12 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		return // 不再往下处理
 	}
 
-	qq := make(map[string]map[uint16]*RR)
+	qq := make(map[string]map[string][]RR)
 	for _, dnn := range dn {
-		qq[dnn] = map[uint16]*RR{dns.TypeA: nil, dns.TypeCNAME: nil}
+		qq[dnn] = make(map[string][]RR)
 	}
 
-	if err := service.ResolvDomains(ip, qq); err != nil {
+	if err := service.ResolvDomains(ip, c, qq); err != nil {
 		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}
@@ -151,23 +160,20 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// A记录优先于CNAME,
-		if tv, ok := v[dns.TypeA]; ok && tv != nil {
-			delete(v, dns.TypeCNAME)
+		if _, ok := v["A"]; ok {
+			delete(v, "CNAME")
 		}
 
 		for t, r := range v {
-			if r == nil {
-				continue
+			for _, r1 := range r {
+				record := &Record{
+					Type: t,
+					Host: r1.Record,
+					TTL:  r1.TTL,
+				}
+				data.S = 0
+				data.Rs = append(data.Rs, record)
 			}
-
-			record := &Record{
-				Type: ParseRRType(t),
-				Host: r.Data,
-				Ttl:  r.Ttl,
-			}
-
-			data.S = 0
-			data.Rs = append(data.Rs, record)
 		}
 
 		rst.Data = append(rst.Data, data)

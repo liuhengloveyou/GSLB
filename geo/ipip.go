@@ -7,20 +7,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
-
-type IpRecord struct {
-	start        uint32
-	end          uint32
-	Country      string
-	Province     string
-	City         string
-	Organization string
-	ISP          string
-	Latitude     string
-	Longitude    string
-}
 
 type IpipDB struct {
 	file *os.File
@@ -83,8 +72,8 @@ func (db *IpipDB) find(ip string) (*IpRecord, error) {
 		mid = int((low + high) / 2)
 		r := &db.records[mid]
 
-		start := r.start
-		end := r.end
+		start := r.Start
+		end := r.End
 
 		if ipiv < start {
 			high = mid - 1
@@ -98,20 +87,8 @@ func (db *IpipDB) find(ip string) (*IpRecord, error) {
 	return nil, nil
 }
 
-func (db *IpipDB) FindIP(ip string) (line, area string) {
-	if r, err := db.find(ip); err == nil {
-		if r != nil {
-			if r.Country == "中国" {
-				line = r.ISP
-				area = r.Country + r.Province
-			} else {
-				line = r.Country
-				area = r.Province
-			}
-		}
-	}
-
-	return
+func (db *IpipDB) FindIP(ip string) (*IpRecord, error) {
+	return db.find(ip)
 }
 
 func parseLine(line []byte) (r *IpRecord, err error) {
@@ -126,20 +103,18 @@ func parseLine(line []byte) (r *IpRecord, err error) {
 	if ipv == nil || ipv.To4() == nil {
 		return nil, ErrIPv4Format
 	}
-	r.start = binary.BigEndian.Uint32(ipv.To4())
+	r.Start = binary.BigEndian.Uint32(ipv.To4())
 
 	ipv = net.ParseIP(fields[1])
 	if ipv == nil || ipv.To4() == nil {
 		return nil, ErrIPv4Format
 	}
-	r.end = binary.BigEndian.Uint32(ipv.To4())
+	r.End = binary.BigEndian.Uint32(ipv.To4())
 	r.Country = fields[2]
 	r.Province = fields[3]
-	r.City = fields[4]
-	r.Organization = fields[5]
 	r.ISP = fields[6]
-	r.Latitude = fields[7]
-	r.Longitude = fields[8]
+	r.Latitude, _ = strconv.ParseFloat(fields[7], 64)
+	r.Longitude, _ = strconv.ParseFloat(fields[8], 64)
 
 	return r, nil
 }

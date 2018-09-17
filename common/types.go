@@ -2,24 +2,26 @@ package common
 
 type RR struct {
 	ID     int
+	TTL    uint32
 	Domain string
-	Ttl    uint32
-	Type   uint16
-	Class  uint16
-	Data   string
-	Group  string
+	Type   string
+	Record string
+	View   string
 
 	Weight        int32
 	CurrentWeight int32
+
+	Latitude  float64
+	Longitude float64
+	Distance  float64
 }
 
-type Rule struct {
+type View struct {
 	ID     int
 	Domain string
 	Line   string
 	Area   string
-	Zone   string
-	Group  string
+	View   string
 }
 
 type Group struct {

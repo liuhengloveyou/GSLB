@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"database/sql"
 	"fmt"
 
 	"../common"
@@ -11,17 +10,6 @@ import (
 )
 
 var db *sqlx.DB
-
-type RR struct {
-	ID         int
-	Domain     string
-	Ttl        uint32
-	Type       uint16
-	Class      uint16
-	Data       sql.NullString
-	Group      sql.NullString
-	UpdateTime sql.RawBytes `db:"update_time"`
-}
 
 func InitDB() {
 	var e error
@@ -36,10 +24,10 @@ func InitDB() {
 	}
 }
 
-func LoadRRFromMysql() (rr []*common.RR, e error) {
+func LoadRRFromMysql() (rr []common.RR, e error) {
 	r := []RR{}
 
-	sql := "select *  from rr"
+	sql := "SELECT id, host, zone, type, ttl, record, view FROM dnsinfo where status=1"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
@@ -49,20 +37,19 @@ func LoadRRFromMysql() (rr []*common.RR, e error) {
 	}
 
 	for i := 0; i < len(r); i++ {
-		t := &common.RR{
+		t := common.RR{
 			ID:     r[i].ID,
-			Domain: r[i].Domain,
-			Ttl:    r[i].Ttl,
+			TTL:    r[i].TTL,
+			Domain: r[i].Host + "." + r[i].Zone + ".",
 			Type:   r[i].Type,
-			Class:  r[i].Class,
 		}
 
-		if r[i].Data.Valid {
-			t.Data = r[i].Data.String
+		if r[i].Record.Valid {
+			t.Record = r[i].Record.String
 		}
 
-		if r[i].Group.Valid {
-			t.Group = r[i].Group.String
+		if r[i].View.Valid {
+			t.View = r[i].View.String
 		}
 
 		rr = append(rr, t)
@@ -70,18 +57,6 @@ func LoadRRFromMysql() (rr []*common.RR, e error) {
 
 	common.Logger.Info(fmt.Sprintf("LoadRRFromMysql ended: %#v %d\n", rr, len(rr)))
 	return rr, nil
-}
-
-func CacheRulesFromMysql() (rules []*common.Rule, e error) {
-	sql := "SELECT rule.domain, zone.line, zone.area,rule.group FROM rule join zone on rule.zone = zone.zone"
-
-	e = db.Select(&rules, sql)
-	common.Logger.Info(fmt.Sprintf("CacheRulesFromMysql end: %v %v", rules, e))
-	if e != nil {
-		return
-	}
-
-	return
 }
 
 func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
@@ -103,18 +78,9 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	for i := 0; i < len(r); i++ {
 		t := &common.RR{
 			ID:     r[i].ID,
-			Domain: r[i].Domain,
-			Ttl:    r[i].Ttl,
+			Domain: r[i].Host + r[i].Zone,
+			TTL:    r[i].TTL,
 			Type:   r[i].Type,
-			Class:  r[i].Class,
-		}
-
-		if r[i].Data.Valid {
-			t.Data = r[i].Data.String
-		}
-
-		if r[i].Group.Valid {
-			t.Group = r[i].Group.String
 		}
 
 		rr = append(rr, t)
@@ -139,20 +105,45 @@ func LoadGroupFromMysql() (g []*common.Group, e error) {
 	return
 }
 
-func SelectRulesFromMysql(domains []string) (rules []*common.Rule, e error) {
+func SelectViewFromMysql(line, area string) (view *common.View, e error) {
+	sql := "SELECT id,isp as line, province as area, view_key as view FROM gslb.viewinfo_key_mapping where isp_name='" + line + "' and province_name='" + area + "'"
+	common.Logger.Debug("SelectViewFromMysql: " + sql)
 
-	sql := "SELECT * FROM ns.rule where domain in ('" + domains[0] + "'"
-	for i := 1; i < len(domains); i++ {
-		sql = sql + ", '" + domains[i] + "'"
-	}
-	sql = sql + ");"
-	common.Logger.Debug("SelectRulesFromMysql: " + sql)
+	var rst View
 
-	e = db.Select(&rules, sql)
-	common.Logger.Info(fmt.Sprintf("SelectRulesFromMysql end: %v %v", rules, e))
+	e = db.Get(&rst, sql)
+	common.Logger.Info(fmt.Sprintf("SelectViewFromMysql end: %v %v", rst, e))
 	if e != nil {
 		return
 	}
 
-	return nil, nil
+	view = &common.View{}
+	view.ID = rst.ID
+	if rst.Domain.Valid {
+		view.Domain = rst.Domain.String
+	}
+	if rst.Line.Valid {
+		view.Line = rst.Line.String
+	}
+	if rst.Area.Valid {
+		view.Area = rst.Area.String
+	}
+	if rst.View.Valid {
+		view.View = rst.View.String
+	}
+
+	return
+}
+
+func SelectIpIp(pageNo, pageSize int) ([]IpRecord, error) {
+	sql := fmt.Sprintf("SELECT id, ip_start, ip_end, country,isp,latitude,longitude FROM ipip where id > %d limit %d", (pageNo-1)*pageSize, pageSize)
+
+	var rst []IpRecord
+
+	e := db.Select(&rst, sql)
+	if e != nil {
+		return nil, e
+	}
+
+	return rst, nil
 }

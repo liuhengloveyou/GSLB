@@ -7,24 +7,24 @@ import (
 	"testing"
 )
 
-var ipip, _ = NewIpipDB("./ipip.txtx")
+var ipip, _ = newIpipDB("./ipip.txtx")
 
 func TestIpipDB(t *testing.T) {
-	r, e := ipip.Find("012.122.162.187")
+	r, e := ipip.FindIP("221.228.97.157")
 	fmt.Println("rst>>>", r, e)
 
-	r, e = ipip.Find("012.122.111.187")
+	r, e = ipip.FindIP("012.122.111.187")
 	fmt.Println("rst>>>", r, e)
-	r, e = ipip.Find("012.172.161.187")
+	r, e = ipip.FindIP("012.172.161.187")
 	fmt.Println("rst>>>", r, e)
 
-	r, e = ipip.Find("122.13.132.175")
+	r, e = ipip.FindIP("122.13.132.175")
 	fmt.Println("rst>>>", r, e)
 }
 
 func BenchmarkIpipDB(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ipip.Find(int2ip(uint32(i)).String())
+		ipip.FindIP(int2ip(uint32(i)).String())
 		//	fmt.Println("rst>>>", r, e)
 	}
 

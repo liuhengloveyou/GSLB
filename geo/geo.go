@@ -2,12 +2,24 @@ package geo
 
 import (
 	"fmt"
+	"math"
 
 	"../common"
 )
 
+// ip库记录
+type IpRecord struct {
+	Start     uint32
+	End       uint32
+	Country   string
+	Province  string
+	ISP       string
+	Latitude  float64
+	Longitude float64
+}
+
 type Geo interface {
-	FindIP(string) (line, area string)
+	FindIP(string) (*IpRecord, error)
 }
 
 type GeoType func(fn string) (Geo, error)
@@ -47,7 +59,26 @@ func InitGEO() {
 	}
 }
 
+//IpRecord
+func (p *IpRecord) GetLineArea() (line, area string) {
+	return p.ISP, p.Province
+}
+
 //// public interface
-func FindIP(ip string) (line, area string) {
+func FindIP(ip string) (*IpRecord, error) {
 	return defaultGeo.FindIP(ip)
+}
+
+func LatitudeLongitudeDistance(lat1, lon1, lat2, lon2 float64) (distance float64) {
+
+	const RADIUS = 6378137 //赤道半径(单位m)
+
+	radLat1 := lat1 * math.Pi / 180.0
+	radLon1 := lon1 * math.Pi / 180.0
+	radLat2 := lat2 * math.Pi / 180.0
+	radLon2 := lon2 * math.Pi / 180.0
+
+	dist := math.Acos(math.Sin(radLat1)*math.Sin(radLat2) + math.Cos(radLat1)*math.Cos(radLat2)*math.Cos(radLon2-radLon1))
+
+	return dist * RADIUS
 }

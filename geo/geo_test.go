@@ -3,12 +3,15 @@ package geo
 import (
 	"fmt"
 	"testing"
-
-	"github.com/ipipdotnet/datx-go"
 )
 
+func TestLatitudeLongitudeDistance(t *testing.T) {
+	fmt.Println(">>>>>>>>", LatitudeLongitudeDistance(23.125178, 113.280637, 13.03659, 101.4925))
+	fmt.Println(">>>>>>>>", LatitudeLongitudeDistance(23.125178, 113.280637, 36.204824, 138.252924))
+}
+
 func TestIpip(t *testing.T) {
-	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>")
+
 	city, err := datx.NewCity("../data/17monipdb.datx") // For City Level IP Database
 
 	if err != nil {

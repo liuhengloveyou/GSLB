@@ -1,4 +1,4 @@
-http_api_addr = ":8080"
+http_api_addr = ":9090"
 dns_api_addr = ":1053"
 
 # 是否打开LocalDNS模式
@@ -11,3 +11,5 @@ mysql = "huya_yunwei:Uy83Pmx#m.P@tcp(221.228.202.24:6301)/gslb?charset=utf8"
 
 geofmt="ipip"
 geodb="./ipip.txtx"
+
+log_dir="./logs/"
