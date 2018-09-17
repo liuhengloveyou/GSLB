@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
-	. "../common"
-	"../service"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/service"
 
 	gocommon "github.com/liuhengloveyou/go-common"
+	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +23,7 @@ const (
 )
 
 type Record struct {
-	Type string `json:"type"`
+	Type uint16 `json:"type"`
 	Host string `json:"host"`
 	TTL  uint32 `json:"ttl"`
 }
@@ -142,9 +143,9 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		return // 不再往下处理
 	}
 
-	qq := make(map[string]map[string][]RR)
+	qq := make(map[string]map[uint16][]*RR)
 	for _, dnn := range dn {
-		qq[dnn] = make(map[string][]RR)
+		qq[dnn] = make(map[uint16][]*RR)
 	}
 
 	if err := service.ResolvDomains(ip, c, qq); err != nil {
@@ -160,8 +161,8 @@ func (p *D) get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// A记录优先于CNAME,
-		if _, ok := v["A"]; ok {
-			delete(v, "CNAME")
+		if _, ok := v[dns.TypeA]; ok {
+			delete(v, dns.TypeCNAME)
 		}
 
 		for t, r := range v {

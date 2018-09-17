@@ -6,25 +6,25 @@ import (
 	"net"
 	"time"
 
-	. "../common"
-	"../service"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/service"
 
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
 
 func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
-	qq := make(map[string]map[uint16]*RR)
+	qq := make(map[string]map[uint16][]*RR)
 	for _, q := range req.Question {
 		Logger.Info("DNS question:", zap.String("name", q.Name), zap.Uint16("qtype", q.Qtype))
 		if qt, ok := qq[q.Name]; ok {
 			qt[q.Qtype] = nil
 		} else {
-			qq[q.Name] = map[uint16]*RR{q.Qtype: nil}
+			qq[q.Name] = map[uint16][]*RR{q.Qtype: nil}
 		}
 	}
 
-	if err := service.ResolvDomains(w.RemoteAddr().(*net.UDPAddr).String(), qq); err != nil {
+	if err := service.ResolvDomains(w.RemoteAddr().(*net.UDPAddr).String(), 1, qq); err != nil {
 		Logger.Error("DNS resolv ERR: " + err.Error())
 		return
 	}
@@ -45,9 +45,9 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 						Name:   domain,
 						Rrtype: dns.TypeA,
 						Class:  dns.ClassINET,
-						Ttl:    rr.Ttl,
+						Ttl:    rr[0].TTL,
 					},
-					A: net.ParseIP(rr.Data),
+					A: net.ParseIP(rr[0].Record),
 				})
 			case dns.TypeCNAME:
 				m.Answer = append(m.Answer, &dns.CNAME{
@@ -55,9 +55,9 @@ func rootDNServer(w dns.ResponseWriter, req *dns.Msg) {
 						Name:   domain,
 						Rrtype: dns.TypeCNAME,
 						Class:  dns.ClassINET,
-						Ttl:    rr.Ttl,
+						Ttl:    rr[0].TTL,
 					},
-					Target: rr.Data,
+					Target: rr[0].Record,
 				})
 			}
 		}

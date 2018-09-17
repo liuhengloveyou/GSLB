@@ -3,15 +3,15 @@ package service
 import (
 	"fmt"
 
-	. "../common"
-	"../dao"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/dao"
 )
 
 // 域名记录缓存. [domain][type]RR
-var rrCache map[string]map[string][]RR
+var rrCache map[string]map[uint16][]*RR
 
 // 域名记录分组缓存. [domain][group]RR
-var groupCache map[string]map[string][]RR
+var groupCache map[string]map[string][]*RR
 
 func LoadGroupCache() (int, error) {
 	g, err := dao.LoadGroupFromMysql()
@@ -40,8 +40,8 @@ func LoadRRCache() (int, error) {
 		return sleep, err
 	}
 
-	gcache := make(map[string]map[string][]RR)
-	rcache := make(map[string]map[string][]RR)
+	gcache := make(map[string]map[string][]*RR)
+	rcache := make(map[string]map[uint16][]*RR)
 
 	for _, r := range rr {
 		if int(r.TTL) < sleep {
@@ -51,14 +51,14 @@ func LoadRRCache() (int, error) {
 		// gcache
 		_, ok := gcache[r.Domain]
 		if !ok {
-			gcache[r.Domain] = make(map[string][]RR)
+			gcache[r.Domain] = make(map[string][]*RR)
 		}
 		gcache[r.Domain][r.View] = append(gcache[r.Domain][r.View], r)
 
 		// rcahce
 		_, ok = rcache[r.Domain]
 		if !ok {
-			rcache[r.Domain] = make(map[string][]RR)
+			rcache[r.Domain] = make(map[uint16][]*RR)
 		}
 		rcache[r.Domain][r.Type] = append(rcache[r.Domain][r.Type], r)
 
@@ -72,6 +72,6 @@ func LoadRRCache() (int, error) {
 	return sleep, nil
 }
 
-func GetRRByView(domain, view string) []RR {
+func GetRRByView(domain, view string) []*RR {
 	return groupCache[domain][view]
 }

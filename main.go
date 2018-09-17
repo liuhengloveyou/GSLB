@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"./api"
-	. "./common"
-	"./dao"
-	"./geo"
-	"./service"
+	"github.com/liuhengloveyou/GSLB/api"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/dao"
+	"github.com/liuhengloveyou/GSLB/geo"
+	"github.com/liuhengloveyou/GSLB/service"
 
 	gocommon "github.com/liuhengloveyou/go-common"
 )

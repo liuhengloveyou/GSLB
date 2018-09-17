@@ -3,12 +3,12 @@ package service
 import (
 	"fmt"
 
-	. "../common"
-	"../geo"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/geo"
 )
 
 // rr : [domain][type]RR
-func ResolvDomains(clientIP string, count int, rr map[string]map[string][]RR) error {
+func ResolvDomains(clientIP string, count int, rr map[string]map[uint16][]*RR) error {
 	ip, _ := geo.FindIP(clientIP)
 	Logger.Info(fmt.Sprintf("ResolvDomains: %s %v", clientIP, ip))
 

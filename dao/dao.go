@@ -4,13 +4,12 @@ import (
 	"database/sql"
 )
 
-// SELECT id,host,zone, type, ttl,record,view FROM gslb.dnsinfo where status=1;
 type RR struct {
 	ID     int            `db:"id"`
 	TTL    uint32         `db:"ttl"`
 	Host   string         `db:"host"`
 	Zone   string         `db:"zone"`
-	Type   string         `db:"type"`
+	Type   uint16         `db:"type"`
 	Record sql.NullString `db:"record"`
 	View   sql.NullString `db:"view"`
 }

@@ -1,8 +1,8 @@
 package service
 
 import (
-	. "../common"
-	"../dao"
+	. "github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/dao"
 )
 
 // 解析规则缓存. [domain][line/area]Rule

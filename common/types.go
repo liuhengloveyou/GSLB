@@ -3,8 +3,8 @@ package common
 type RR struct {
 	ID     int
 	TTL    uint32
+	Type   uint16
 	Domain string
-	Type   string
 	Record string
 	View   string
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"../common"
+	"github.com/liuhengloveyou/GSLB/common"
 )
 
 // ip库记录

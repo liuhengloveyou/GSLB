@@ -3,7 +3,7 @@ package dao
 import (
 	"fmt"
 
-	"../common"
+	"github.com/liuhengloveyou/GSLB/common"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -24,8 +24,8 @@ func InitDB() {
 	}
 }
 
-func LoadRRFromMysql() (rr []common.RR, e error) {
-	r := []RR{}
+func LoadRRFromMysql() (rr []*common.RR, e error) {
+	r := []*RR{}
 
 	sql := "SELECT id, host, zone, type, ttl, record, view FROM dnsinfo where status=1"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
@@ -37,7 +37,7 @@ func LoadRRFromMysql() (rr []common.RR, e error) {
 	}
 
 	for i := 0; i < len(r); i++ {
-		t := common.RR{
+		t := &common.RR{
 			ID:     r[i].ID,
 			TTL:    r[i].TTL,
 			Domain: r[i].Host + "." + r[i].Zone + ".",

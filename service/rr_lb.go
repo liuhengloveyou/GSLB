@@ -3,8 +3,10 @@ package service
 import (
 	"sort"
 
-	"../common"
-	"../geo"
+	"github.com/liuhengloveyou/GSLB/common"
+	"github.com/liuhengloveyou/GSLB/geo"
+
+	"github.com/miekg/dns"
 )
 
 // 系统中所有接入点分级均衡策略列表.
@@ -19,7 +21,7 @@ var groupPolicy map[string]LB
 ////////////////////////////////////////////////////////////////////////////////
 
 type LB interface {
-	Get(domain, view string, client *geo.IpRecord, rrs []common.RR) []common.RR
+	Get(domain, view string, client *geo.IpRecord, rrs []*common.RR) []*common.RR
 }
 
 // 轮询
@@ -28,7 +30,7 @@ type LBRR struct {
 	i    map[string]int
 }
 
-func (p *LBRR) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) []common.RR {
+func (p *LBRR) Get(domain, view string, client *geo.IpRecord, rrs []*common.RR) []*common.RR {
 	if p.i == nil {
 		p.i = make(map[string]int)
 		p.i[domain+"/"+view] = -1
@@ -41,7 +43,7 @@ func (p *LBRR) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) [
 	}
 
 	idx := p.i[domain+"/"+view]
-	rrsr := make([]common.RR, len(rrs))
+	rrsr := make([]*common.RR, len(rrs))
 	for i := 0; i < len(rrs); i++ {
 		if idx >= len(rrs) {
 			idx = 0
@@ -57,7 +59,7 @@ type LBWRR struct {
 	Name string
 }
 
-func (p *LBWRR) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) []common.RR {
+func (p *LBWRR) Get(domain, view string, client *geo.IpRecord, rrs []*common.RR) []*common.RR {
 	index := -1
 	var total int32
 
@@ -72,7 +74,7 @@ func (p *LBWRR) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) 
 
 	rrs[index].CurrentWeight -= total
 
-	rrsr := make([]common.RR, len(rrs))
+	rrsr := make([]*common.RR, len(rrs))
 	for i := 0; i < len(rrs); i++ {
 		rrsr[i] = rrs[index]
 		if index >= len(rrs) {
@@ -84,7 +86,7 @@ func (p *LBWRR) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) 
 }
 
 // 就近接入
-type ByDistance []common.RR
+type ByDistance []*common.RR
 
 func (p ByDistance) Len() int           { return len(p) }
 func (p ByDistance) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
@@ -94,11 +96,11 @@ type LBNear struct {
 	Name string
 }
 
-func (p *LBNear) Get(domain, view string, client *geo.IpRecord, rrs []common.RR) []common.RR {
-	var rrsr = make([]common.RR, 0)
+func (p *LBNear) Get(domain, view string, client *geo.IpRecord, rrs []*common.RR) []*common.RR {
+	var rrsr = make([]*common.RR, 0)
 
 	for i := 0; i < len(rrs); i++ {
-		if rrs[i].Type == "A" {
+		if rrs[i].Type == dns.TypeA {
 			ip, _ := geo.FindIP(rrs[i].Record)
 			rrs[i].Distance = geo.LatitudeLongitudeDistance(client.Latitude, client.Longitude, ip.Latitude, ip.Longitude)
 			rrsr = append(rrsr, rrs[i])
@@ -114,7 +116,7 @@ func (p *LBNear) Get(domain, view string, client *geo.IpRecord, rrs []common.RR)
 	return rrsr
 }
 
-func GroupLB(domain, view string, client *geo.IpRecord, rrs []common.RR) []common.RR {
+func GroupLB(domain, view string, client *geo.IpRecord, rrs []*common.RR) []*common.RR {
 	if lb, ok := groupPolicy[domain+"/"+view]; ok {
 		return lb.Get(domain, view, client, rrs)
 	} else {
