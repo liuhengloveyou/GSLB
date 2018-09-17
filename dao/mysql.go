@@ -27,7 +27,7 @@ func InitDB() {
 func LoadRRFromMysql() (rr []*common.RR, e error) {
 	r := []*RR{}
 
-	sql := "SELECT id, host, zone, type, ttl, record, view FROM dnsinfo where status=1"
+	sql := "SELECT id, host, zone, ttl, type, record, view, policy FROM ns.rr where online=1"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
@@ -90,21 +90,6 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	return rr, nil
 }
 
-func LoadGroupFromMysql() (g []*common.Group, e error) {
-
-	sql := "SELECT id,host as domain, group_name as `name`, policy FROM dnsinfo_group;"
-	common.Logger.Debug("LoadGroupFromMysql: " + sql)
-
-	e = db.Select(&g, sql)
-	common.Logger.Info(fmt.Sprintf("LoadGroupFromMysql end: %v %v", g, e))
-	if e != nil {
-		return
-	}
-
-	common.Logger.Info(fmt.Sprintf("LoadGroupFromMysql ended: %#v %d\n", g, len(g)))
-	return
-}
-
 func SelectViewFromMysql(line, area string) (view *common.View, e error) {
 	sql := "SELECT id,isp as line, province as area, view_key as view FROM gslb.viewinfo_key_mapping where isp_name='" + line + "' and province_name='" + area + "'"
 	common.Logger.Debug("SelectViewFromMysql: " + sql)
@@ -133,17 +118,4 @@ func SelectViewFromMysql(line, area string) (view *common.View, e error) {
 	}
 
 	return
-}
-
-func SelectIpIp(pageNo, pageSize int) ([]IpRecord, error) {
-	sql := fmt.Sprintf("SELECT id, ip_start, ip_end, country,isp,latitude,longitude FROM ipip where id > %d limit %d", (pageNo-1)*pageSize, pageSize)
-
-	var rst []IpRecord
-
-	e := db.Select(&rst, sql)
-	if e != nil {
-		return nil, e
-	}
-
-	return rst, nil
 }

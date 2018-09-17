@@ -1,4 +1,5 @@
-// dig -b 127.0.0.1 -p 1053
+// dig www.g.com @127.0.0.1 -p 1053
+
 package api
 
 import (

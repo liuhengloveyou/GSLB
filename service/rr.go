@@ -13,25 +13,6 @@ var rrCache map[string]map[uint16][]*RR
 // 域名记录分组缓存. [domain][group]RR
 var groupCache map[string]map[string][]*RR
 
-func LoadGroupCache() (int, error) {
-	g, err := dao.LoadGroupFromMysql()
-	if err != nil {
-		return 0, err
-	}
-
-	t := make(map[string]LB, len(g))
-	for i := 0; i < len(g); i++ {
-		if (g[i].Policy) >= len(lbs) {
-			Logger.Error(fmt.Sprintf("group policy config ERR: %s %s %d", g[i].Domain, g[i].Name, g[i].Policy))
-		}
-
-		t[g[i].Domain+"/"+g[i].Name] = lbs[g[i].Policy]
-		Logger.Info(fmt.Sprintf("group one: %v %v %v", g[i].Domain, g[i].Name, lbs[g[i].Policy]))
-	}
-
-	return ServConfig.CacheTTL, nil
-}
-
 func LoadRRCache() (int, error) {
 	sleep := ServConfig.CacheTTL
 
@@ -47,6 +28,8 @@ func LoadRRCache() (int, error) {
 		if int(r.TTL) < sleep {
 			sleep = int(r.TTL)
 		}
+
+		Logger.Debug(fmt.Sprintf("LoadRRCache: %#v\n", r))
 
 		// gcache
 		_, ok := gcache[r.Domain]

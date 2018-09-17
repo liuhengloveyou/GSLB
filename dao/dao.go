@@ -12,6 +12,7 @@ type RR struct {
 	Type   uint16         `db:"type"`
 	Record sql.NullString `db:"record"`
 	View   sql.NullString `db:"view"`
+	Policy sql.NullString `db:"policy"`
 }
 
 type View struct {

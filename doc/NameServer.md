@@ -177,44 +177,31 @@ CREATE SCHEMA `ns` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
 ```
 
 **资源记录(Resource Record, RR)**：
-```
+```sql
 CREATE TABLE `rr` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `domain` varchar(128) NOT NULL,
   `ttl` int(11) NOT NULL DEFAULT '600',
   `type` tinyint(4) NOT NULL,
-  `class` tinyint(4) NOT NULL DEFAULT '1',
-  `data` varchar(45) NOT NULL,
-  `group` varchar(45) DEFAULT NULL,
+  `record` varchar(45) NOT NULL,
+  `view` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `index_domain_type` (`domain`,`type`),
-  KEY `index_group` (`group`,`domain`)
+  KEY `index_view` (`view`,`domain`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-
 ```
 
 **客户分区**:
 
-```
-CREATE TABLE `ns`.`zone` (
+```sql
+CREATE TABLE `ns`.`view` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain` varchar(128) NOT NULL,
   `line` varchar(45) COLLATE utf8_bin NOT NULL,
   `area` varchar(45) COLLATE utf8_bin NOT NULL,
-  `zone` varchar(45) COLLATE utf8_bin NOT NULL,
+  `view` varchar(45) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_line_area` (`line`,`area`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-```
-
-**解析映射**：
-```
-CREATE TABLE `ns`.`rule` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain` varchar(256) COLLATE utf8_bin NOT NULL,
-  `zone` varchar(45) COLLATE utf8_bin NOT NULL,
-  `group` varchar(45) COLLATE utf8_bin NOT NULL,
-  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 ```
 

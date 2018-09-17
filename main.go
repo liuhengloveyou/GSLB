@@ -46,18 +46,16 @@ func main() {
 		}()
 	}
 
-	/*
-		if ServConfig.DNSApiAddr != "" {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				fmt.Printf("DNS %v\n", ServConfig.DNSApiAddr)
-				if err := api.InitDnsApi(ServConfig.DNSApiAddr); err != nil {
-					panic("DNSAPI: " + err.Error())
-				}
-			}()
-		}
-	*/
+	if ServConfig.DNSApiAddr != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("DNS %v\n", ServConfig.DNSApiAddr)
+			if err := api.InitDnsApi(ServConfig.DNSApiAddr); err != nil {
+				panic("DNSAPI: " + err.Error())
+			}
+		}()
+	}
 
 	wg.Wait()
 }
@@ -65,16 +63,6 @@ func main() {
 func loadCaches() {
 	for {
 		sleep := ServConfig.CacheTTL
-
-		/*
-			s, err := service.LoadGroupCache()
-			if err != nil {
-				Logger.Error("LoadGroupCache ERR: " + err.Error())
-			}
-			if err == nil && s < sleep {
-				sleep = s
-			}
-		*/
 
 		s, err := service.LoadRRCache()
 		if err != nil {

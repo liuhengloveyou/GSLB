@@ -8,44 +8,53 @@ import (
 )
 
 // rr : [domain][type]RR
-func ResolvDomains(clientIP string, count int, rr map[string]map[uint16][]*RR) error {
+func ResolvDomains(clientIP string, count int, rr map[string]map[uint16][]*RR) (err error) {
+	var line, area string
+	var view *View
+
 	ip, _ := geo.FindIP(clientIP)
+	if ip != nil {
+		line, area = ip.GetLineArea()
+
+		view, err = GetView(line, area)
+		if err != nil {
+			Logger.Error("getview ERR: " + clientIP)
+		}
+	}
+
 	Logger.Info(fmt.Sprintf("ResolvDomains: %s %v", clientIP, ip))
 
 	for domain := range rr {
-		line, area := ip.GetLineArea()
-		view, err := GetView(line, area)
-		if err != nil {
-			Logger.Error("gerview ERR: " + domain + "; " + clientIP)
-			continue
-		}
+		// 解析指定view
+		if view != nil {
+			rrs := GetRRByView(domain, view.View)
+			rrs = GroupLB(domain, view.View, ip, rrs)
+			for i := 0; i < count && i < len(rrs); i++ {
+				rr[rrs[i].Domain][rrs[i].Type] = append(rr[rrs[i].Domain][rrs[i].Type], rrs[i])
+			}
+			Logger.Info("ResolvDomains one: " + domain + "\t" + clientIP + ": " + fmt.Sprintf("%#v", view) + ": " + fmt.Sprintf("%#v", rrs))
 
-		// 指定view
-		rrs := GetRRByView(domain, view.View)
-		rrs = GroupLB(domain, view.View, ip, rrs)
-		for i := 0; i < count && i < len(rrs); i++ {
-			rr[rrs[i].Domain][rrs[i].Type] = append(rr[rrs[i].Domain][rrs[i].Type], rrs[i])
+			count = count - len(rrs)
 		}
-		Logger.Info("ResolvDomains one: " + domain + "\t" + clientIP + ": " + fmt.Sprintf("%#v", view) + ": " + fmt.Sprintf("%#v", rrs))
-
-		count = count - len(rrs)
 
 		// 线路默认view
-		if count > 0 {
-			rrs = GetRRByView(domain, LineDefault(line))
+		if line != "" && count > 0 {
+			rrs := GetRRByView(domain, LineDefault(line))
 			rrs = GroupLB(domain, LineDefault(line), ip, rrs)
 			for i := 0; i < count && i < len(rrs); i++ {
 				rr[rrs[i].Domain][rrs[i].Type] = append(rr[rrs[i].Domain][rrs[i].Type], rrs[i])
 			}
 			Logger.Info("ResolvDomains one: " + domain + "\t" + clientIP + ": " + LineDefault(line) + ": " + fmt.Sprintf("%#v", rrs))
-		}
+			count = count - len(rrs)
 
-		count = count - len(rrs)
+		}
 
 		// 域名默认view
 		if count > 0 {
-			rrs = GetRRByView(domain, ANY)
-			rrs = GroupLB(domain, ANY, ip, rrs)
+			rrs := GetRRByView(domain, ANY)
+			if ip != nil {
+				rrs = GroupLB(domain, ANY, ip, rrs)
+			}
 			for i := 0; i < count && i < len(rrs); i++ {
 				rr[rrs[i].Domain][rrs[i].Type] = append(rr[rrs[i].Domain][rrs[i].Type], rrs[i])
 			}

@@ -7,7 +7,7 @@ localdns = true
 # 解析规则缓存刷新间隔秒数
 cache_ttl = 10
 
-mysql = "huya_yunwei:Uy83Pmx#m.P@tcp(221.228.202.24:6301)/gslb?charset=utf8"
+mysql = "root:lhisroot@tcp(127.0.0.1:3306)/ns?charset=utf8"
 
 geofmt="ipip"
 geodb="./ipip.txtx"

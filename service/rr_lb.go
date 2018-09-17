@@ -101,8 +101,12 @@ func (p *LBNear) Get(domain, view string, client *geo.IpRecord, rrs []*common.RR
 
 	for i := 0; i < len(rrs); i++ {
 		if rrs[i].Type == dns.TypeA {
-			ip, _ := geo.FindIP(rrs[i].Record)
-			rrs[i].Distance = geo.LatitudeLongitudeDistance(client.Latitude, client.Longitude, ip.Latitude, ip.Longitude)
+			if client.Latitude > 0 && client.Longitude > 0 {
+				ip, _ := geo.FindIP(rrs[i].Record)
+				if ip.Latitude > 0 && ip.Longitude > 0 {
+					rrs[i].Distance = geo.LatitudeLongitudeDistance(client.Latitude, client.Longitude, ip.Latitude, ip.Longitude)
+				}
+			}
 			rrsr = append(rrsr, rrs[i])
 		}
 	}
