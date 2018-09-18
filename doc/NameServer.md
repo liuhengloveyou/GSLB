@@ -180,29 +180,32 @@ CREATE SCHEMA `ns` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
 ```sql
 CREATE TABLE `rr` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain` varchar(128) NOT NULL,
+  `host` varchar(128) NOT NULL,
+  `zone` varchar(128) NOT NULL,
   `ttl` int(11) NOT NULL DEFAULT '600',
   `type` tinyint(4) NOT NULL,
   `record` varchar(45) NOT NULL,
-  `view` varchar(45) DEFAULT NULL,
+  `view` varchar(45) NOT NULL DEFAULT 'any',
+  `policy` varchar(45) DEFAULT 'near' COMMENT 'near、rr、wrr',
+  `online` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `index_domain_type` (`domain`,`type`),
-  KEY `index_view` (`view`,`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+  KEY `index_domain_type` (`zone`,`type`),
+  KEY `index_view` (`view`,`zone`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 ```
 
 **客户分区**:
 
 ```sql
-CREATE TABLE `ns`.`view` (
+CREATE TABLE `view` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain` varchar(128) NOT NULL,
+  `domain` varchar(128) COLLATE utf8_bin NOT NULL,
   `line` varchar(45) COLLATE utf8_bin NOT NULL,
   `area` varchar(45) COLLATE utf8_bin NOT NULL,
   `view` varchar(45) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_line_area` (`line`,`area`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 ```
 
 
