@@ -27,7 +27,7 @@ func InitDB() {
 func LoadRRFromMysql() (rr []*common.RR, e error) {
 	r := []*RR{}
 
-	sql := "SELECT `id`, `host`, `zone`, `ttl`, `type`, `record`, `view`, `policy` FROM rr where online=1"
+	sql := "SELECT `id`, `host`, `zone`, `ttl`, `type`, `record`, `view` FROM rr where online=1"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
