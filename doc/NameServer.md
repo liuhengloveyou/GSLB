@@ -186,12 +186,11 @@ CREATE TABLE `rr` (
   `type` tinyint(4) NOT NULL,
   `record` varchar(45) NOT NULL,
   `view` varchar(45) NOT NULL DEFAULT 'any',
-  `policy` varchar(45) DEFAULT 'near' COMMENT 'near、rr、wrr',
   `online` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `index_domain_type` (`zone`,`type`),
   KEY `index_view` (`view`,`zone`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 ```
 
 **客户分区**:
@@ -203,6 +202,7 @@ CREATE TABLE `view` (
   `line` varchar(45) COLLATE utf8_bin NOT NULL,
   `area` varchar(45) COLLATE utf8_bin NOT NULL,
   `view` varchar(45) COLLATE utf8_bin NOT NULL,
+  `policy` int(11) NOT NULL DEFAULT '0' COMMENT '[near,rr,wrr]',
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_line_area` (`line`,`area`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
