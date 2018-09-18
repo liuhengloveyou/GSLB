@@ -15,16 +15,16 @@ func ResolvDomains(clientIP string, count int, rr map[string]map[uint16][]*RR) (
 	ip, _ := geo.FindIP(clientIP)
 	if ip != nil {
 		line, area = ip.GetLineArea()
-
-		view, err = GetView(line, area)
-		if err != nil {
-			Logger.Error("getview ERR: " + clientIP)
-		}
 	}
 
 	Logger.Info(fmt.Sprintf("ResolvDomains: %s %v", clientIP, ip))
 
 	for domain := range rr {
+		view = GetView(domain, line, area)
+		if view == nil {
+			Logger.Warn("getview nil: " + clientIP)
+		}
+
 		// 解析指定view
 		if view != nil {
 			rrs := GetRRByView(domain, view.View)

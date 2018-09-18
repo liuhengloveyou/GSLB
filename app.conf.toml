@@ -1,5 +1,5 @@
 http_api_addr = ":9090"
-dns_api_addr = ":1053"
+dns_api_addr = "127.0.0.1:1053"
 
 # 是否打开LocalDNS模式
 localdns = true

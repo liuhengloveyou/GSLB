@@ -12,15 +12,15 @@ type RR struct {
 	Type   uint16         `db:"type"`
 	Record sql.NullString `db:"record"`
 	View   sql.NullString `db:"view"`
-	Policy sql.NullString `db:"policy"`
 }
 
 type View struct {
-	ID     int            `db:"id"`
-	Domain sql.NullString `db:"domain"`
-	Line   sql.NullString `db:"line"`
-	Area   sql.NullString `db:"area"`
-	View   sql.NullString `db:"view"`
+	ID     int    `db:"id"`
+	Domain string `db:"domain"`
+	Line   string `db:"line"`
+	Area   string `db:"area"`
+	View   string `db:"view"`
+	Policy uint16 `db:"policy"`
 }
 
 // ip库记录

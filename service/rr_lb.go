@@ -10,6 +10,7 @@ import (
 )
 
 // 系统中所有接入点分级均衡策略列表.
+// near: 就近
 // rr : 轮询
 // wrr: 加权轮询
 var lbs []LB = make([]LB, 3)

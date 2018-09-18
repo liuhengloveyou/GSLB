@@ -27,7 +27,7 @@ func InitDB() {
 func LoadRRFromMysql() (rr []*common.RR, e error) {
 	r := []*RR{}
 
-	sql := "SELECT id, host, zone, ttl, type, record, view, policy FROM ns.rr where online=1"
+	sql := "SELECT `id`, `host`, `zone`, `ttl`, `type`, `record`, `view`, `policy` FROM rr where online=1"
 	common.Logger.Debug("LoadRRFromMysql: " + sql)
 
 	e = db.Select(&r, sql)
@@ -62,7 +62,7 @@ func LoadRRFromMysql() (rr []*common.RR, e error) {
 func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	r := []RR{}
 
-	sql := "SELECT * FROM ns.rr where domain in ('" + d[0] + "'"
+	sql := "SELECT * FROM rr where domain in ('" + d[0] + "'"
 	for i := 1; i < len(d); i++ {
 		sql = sql + ", '" + d[i] + "'"
 	}
@@ -90,32 +90,31 @@ func SelectRRsFromMysql(d []string) (rr []*common.RR, e error) {
 	return rr, nil
 }
 
-func SelectViewFromMysql(line, area string) (view *common.View, e error) {
-	sql := "SELECT id,isp as line, province as area, view_key as view FROM gslb.viewinfo_key_mapping where isp_name='" + line + "' and province_name='" + area + "'"
-	common.Logger.Debug("SelectViewFromMysql: " + sql)
+func LoadViewFromMysql() (view []*common.View, e error) {
+	r := []*View{}
 
-	var rst View
+	sql := "SELECT * FROM view"
+	common.Logger.Debug("LoadViewFromMysql: " + sql)
 
-	e = db.Get(&rst, sql)
-	common.Logger.Info(fmt.Sprintf("SelectViewFromMysql end: %v %v", rst, e))
+	e = db.Select(&r, sql)
+	common.Logger.Info(fmt.Sprintf("LoadViewFromMysql end: %v %v", r, e))
 	if e != nil {
 		return
 	}
 
-	view = &common.View{}
-	view.ID = rst.ID
-	if rst.Domain.Valid {
-		view.Domain = rst.Domain.String
-	}
-	if rst.Line.Valid {
-		view.Line = rst.Line.String
-	}
-	if rst.Area.Valid {
-		view.Area = rst.Area.String
-	}
-	if rst.View.Valid {
-		view.View = rst.View.String
+	for i := 0; i < len(r); i++ {
+		t := &common.View{
+			ID:     r[i].ID,
+			Domain: r[i].Domain,
+			Line:   r[i].Domain,
+			Area:   r[i].Area,
+			View:   r[i].View,
+			Policy: r[i].Policy,
+		}
+
+		view = append(view, t)
 	}
 
+	common.Logger.Info(fmt.Sprintf("LoadViewFromMysql ended: %#v %d\n", view, len(view)))
 	return
 }

@@ -22,6 +22,7 @@ type View struct {
 	Line   string
 	Area   string
 	View   string
+	Policy uint16
 }
 
 type Group struct {
